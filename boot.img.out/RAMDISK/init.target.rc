@@ -1,0 +1,42 @@
+on init
+    #export LD_PRELOAD "libsigchain.so libNimsWrap.so"
+    export LD_PRELOAD ""
+
+on early-init
+    chown root system /dev/goodix_fp
+    chown 0664 /dev/goodix_fp
+
+on boot
+    chown root system /sys/class/leds/infrared/transmit
+    chown root system /sys/class/leds/red/blink
+    chown root system /sys/class/leds/green/blink
+    chown root system /sys/class/leds/blue/blink
+
+    chown root system /sys/class/power_supply/bms/current_now
+    chown root system /sys/class/power_supply/bms/voltage_ocv
+    chmod 0664 /sys/class/power_supply/bms/current_now
+    chmod 0664 /sys/class/power_supply/bms/voltage_ocv
+    start vm_bms
+
+on ffbm
+    trigger early-fs
+    trigger fs
+    trigger post-fs
+    trigger post-fs-data
+    trigger early-boot
+    trigger boot
+    start reboot_recovery
+
+service reboot_recovery /system/bin/reboot recovery
+    class late_start
+    user root
+    group root
+    disabled
+    oneshot
+
+service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
+    class late_start
+    user root
+    group system
+    disabled
+    oneshot
